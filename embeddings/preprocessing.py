@@ -11,21 +11,21 @@ from nltk.tag import pos_tag
 from gensim.models import Word2Vec
 from collections import defaultdict, Counter
 from reach import Reach
-
+from tqdm import tqdm 
 
 file_path = 'data/citysearch/train.txt'
 
 def generate_nouns(file_path, 
                    word2vec="embeddings/restaurant_vecs_w2v.vec", 
-                   topk=200,
                    out_path='data/nouns_restaurant.json'
                    ): 
+    print('\tStarting generate nouns ... ')
     with open(file_path, 'r') as f:
         text = f.readlines()
     nouns = []
     noun_counts = defaultdict(int)
 
-    for sentence in text:
+    for sentence in tqdm(text):
         words = word_tokenize(sentence)
         tagged_words = pos_tag(words)
         nouns = [word for word, pos in tagged_words if pos[0] == 'N']
@@ -40,6 +40,7 @@ def generate_nouns(file_path,
             nouns_dict[k.lower()] += v
     # candidates, _ = zip(*nouns_dict.most_common(topk))
     json.dump(nouns_dict, open(out_path, 'w'))
+    print(f"\tFinishing generate nouns, output path: {out_path}")
     # return candidates
 
 
