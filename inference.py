@@ -22,33 +22,43 @@ if __name__ == "__main__":
     """
 
 
-    scores = defaultdict(dict)
-    r = Reach.load("embeddings/restaurant_vecs_w2v.vec",
-                   unk_word="<UNK>")                        ## load word embedding 
+    # scores = defaultdict(dict)
+    # r = Reach.load("embeddings/restaurant_vecs_w2v.vec",
+    #                unk_word="<UNK>")                        ## load word embedding 
     
 
-    nouns_restaurant = [[x] for x in json.load(open("data/nouns_restaurant.json"))]
-    nouns = Counter()
-    for k, v in nouns_restaurant.items():
-        if k.lower() in r.items:
-            nouns[k.lower()] += v
+    # nouns_restaurant = [[x] for x in json.load(open("data/nouns_restaurant.json"))]
+    # nouns = Counter()
+    # for k, v in nouns_restaurant.items():
+    #     if k.lower() in r.items:
+    #         nouns[k.lower()] += v
 
-    top_nouns, _ = zip(*nouns.most_common(N_ASPECT_WORDS))
-    top_nouns = [[x] for x in top_nouns]
+    # top_nouns, _ = zip(*nouns.most_common(N_ASPECT_WORDS))
+    # top_nouns = [[x] for x in top_nouns]
     
-    instances = ["text_1".split(), "text_2".split()]
-    label_set = ['food', 'staff', 'ambience']
+    # instances = ["text_1".split(), "text_2".split()]
+    # label_set = ['food', 'staff', 'ambience']
 
-    s = get_scores(instances,
-                   top_nouns,
-                   r,
-                   label_set,
-                   gamma=GAMMA,
-                   remove_oov=False,
-                   attention_func=rbf_attention)
+    # s = get_scores(instances,
+    #                top_nouns,
+    #                r,
+    #                label_set,
+    #                gamma=GAMMA,
+    #                remove_oov=False,
+    #                attention_func=rbf_attention)
 
-    pred = s.argmax(1)
+    # pred = s.argmax(1)
 
+    import pandas as pd
 
+    df = []
 
+    df = [
+        ['yen', 12, '10'], 
+        ['duc', 12, '9']
+    ]
+    df.append(['quan', 13, '11'])
+    df = pd.DataFrame(df, columns=['name', 'age', 'score'])
+
+    print(df)
     

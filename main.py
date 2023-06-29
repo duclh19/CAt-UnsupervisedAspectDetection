@@ -8,7 +8,7 @@ from cat.simple import get_scores, rbf_attention, attention
 from cat.dataset import semeval_loader, citysearch_loader
 from collections import defaultdict, Counter
 from reach import Reach
-gamma = [0.01, 0.03, 0.07, 0.1, 0.15, 0.2, 0.3]
+gamma = [0.01, 0.03, 0.07, 0.1, 0.15, 0.04, 0.3]
 best = 0
 N_NOUNS = 200
 
@@ -44,7 +44,7 @@ aspects = [[x] for x in candidates]
 
 
 
-for idx, (instances, y, label_set) in enumerate(citysearch_loader()):
+for idx, (instances, y, label_set) in enumerate(semeval_loader()):
     for gamma_ in gamma:
         s = get_scores(instances,
                         aspects,
