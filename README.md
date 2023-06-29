@@ -17,14 +17,14 @@ Implementation of CAt approach for Unsupervised Aspect Category Detection. The o
 
     `python embeddings/preprocessing.py`
 ## 2. Experiments
+  - After running `preprocessing.py`, you are able to evaluate your text by go to part _2.2_ or re-experiment of 2 datasets CitySearch or SemEval-2014 restaurant by go to part _2.1_. 
 
-
-  - Experiment on CitySearch dataset or SemEal-2014 restaurant dataset.
+  - 2.1 Experiment yourself on CitySearch dataset or SemEal-2014 restaurant dataset .
     
     `python main.py`
 
 
-  - Test your own experiment in restaurant domain.
+  - 2.2 Test your own experiment in restaurant domain.
   
     `python inference.py`
 

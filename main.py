@@ -11,8 +11,8 @@ from reach import Reach
 
 ### SETTINGS
 
-w2v_path = "embeddings/w2v_restaurant_300_ep_9.vec"
-nouns_path = "data/nouns_restaurant_300_ep_9.json"
+w2v_path = "embeddings/w2v_restaurant_200_ep_5.vec"
+nouns_path = "data/nouns_restaurant_200_ep_5.json"
 
 ## Change between `rbf_attention` and `attention`
 att = rbf_attention
@@ -22,7 +22,7 @@ dataset = citysearch_loader()
 
 if att == rbf_attention: 
     GAMMA = 0.04
-    N_NOUNS = 600
+    N_NOUNS = 200
 else: 
     GAMMA = -1      # not in use if using normal attention head
     N_NOUNS = 950
@@ -55,16 +55,8 @@ for sentence, y, label_set in semeval_loader():
                                                     average="micro")
         print('f1:')
         pprint(f1)
-        print('f1_macro')
-        pprint(f1_macro)
+        print('-----' * 5)
 
         print('f1_weighted')
-        pprint(f1_weighted)
-
-        print('f1_micro\n', f1_micro)
-
-        print('-----' * 5)
-        print('-----' * 5)
         f1 = f1_score(y, y_pred, average='weighted',)
-
         print(f1)

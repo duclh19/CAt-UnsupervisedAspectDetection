@@ -9,8 +9,8 @@ from collections import defaultdict, Counter
 
 GAMMA       = .03
 N_NOUNS     = 200
-w2v_path    = "embeddings/restaurant_vecs_w2v.vec"
-nouns_path  = "data/nouns_restaurant.json"
+w2v_path = "embeddings/w2v_restaurant_200_ep_5.vec"
+nouns_path = "data/nouns_restaurant_200_ep_5.json"
 
 if __name__ == "__main__":
     print("\tLoading words embedding ...")
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # sentences = ["The seafood is so fresh, but the hotdog is much more better".split(), 
     #              "the waiter is friendly but he is too short".split(), 
     #              ]
-    sentences = ["The restaurant is modern".split()]
+    sentences = ["The restaurant is large and modern".split()]
     label_set = ['food', 'staff', 'ambience']
 
     s = get_scores(sentences,

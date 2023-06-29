@@ -48,7 +48,7 @@ semeval_14_test = partial(loader,
                        instance_path="data/semeval2014/test_se.txt",
                        label_path="data/semeval2014/test_label_se.txt",
                        subset_labels={"ambience", "staff", "food"},
-                       split_labels=True)
+                       )
 
 def semeval_loader():
     yield semeval_14_test()
