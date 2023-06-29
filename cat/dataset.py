@@ -1,33 +1,23 @@
-"""Simple dataset loader for the 2014, 2015 semeval datasets.
-
-    functions: 
-        loader              : return 
-        restaurant_train    :   
-        restaurant_test     : 
-
-
 """
-from sklearn.preprocessing import LabelEncoder      # transform from ['food', 'service'] -> [1, 0]
-from functools import partial                       # ok
+Simple dataset loader for the semeval-2014 and citysearch test sets.
+"""
+from sklearn.preprocessing import LabelEncoder      
+from functools import partial                       
 
-from gensim.similarities import SparseMatrixSimilarity, SoftCosineSimilarity
 def loader(instance_path,
            label_path,
            subset_labels,
-           split_labels=False,
-           mapping=None):
+           ):
     """
     instance_path   = path to review file? 
     label_path      = path to file contain set of labels (all set of label)
     subset_labels   = sub set of labels, paper uses subset of size 3
 
-    split_labels: remove label to get only the text sentence
-
     Return
     ------ 
-    instance    :  
-    y           : 
-    label_set   : label set, only in subset_labels
+    instance    : list of sentences
+    y           : list of encoded labels
+    label_set   : label set, only in subset_labels ['food', 'staff', 'ambience']
     """
     subset_labels = set(subset_labels)
     labels = open(label_path)
@@ -42,18 +32,11 @@ def loader(instance_path,
                             if len(y) == 1 and y[0]
                             in subset_labels])
 
-    if mapping is not None:
-        gold = [mapping.get(x, x) for x in gold]
-
     le = LabelEncoder()
     y = le.fit_transform(gold)
     label_set = le.classes_.tolist()
 
     return instances, y, label_set
-
-
-### Need to understand partial function 
-#       Call rest_14_test(split_labels, mapping)
 
 citysearch_test = partial(loader,
                           instance_path="data/citysearch/test.txt",
@@ -61,32 +44,17 @@ citysearch_test = partial(loader,
                           subset_labels={"ambience", "staff", "food"}
                           )
 
-
-rest_15_train = partial(loader,
-                        instance_path="data/f.txt",
-                        label_path="data/labels_restaurant_train_2015.txt",
-                        subset_labels={"ambience",
-                                       "service",
-                                       "food"},
-                        split_labels=True)
-
 semeval_14_test = partial(loader,
                        instance_path="data/semeval2014/test_se.txt",
                        label_path="data/semeval2014/test_label_se.txt",
-                       subset_labels={"ambience",
-                                      "staff",
-                                      "food"},
+                       subset_labels={"ambience", "staff", "food"},
                        split_labels=True)
-
 
 def semeval_loader():
     yield semeval_14_test()
 
-
 def citysearch_loader():
     yield citysearch_test()
-
-
 
 if __name__ == "__main__": 
     instance, y, label_set = semeval_loader()

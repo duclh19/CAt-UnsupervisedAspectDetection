@@ -4,87 +4,67 @@ from pprint import pprint
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import f1_score, precision_score, recall_score
 
-from cat.simple import get_scores, rbf_attention, attention
+from cat.simple import get_scores, rbf_attention, attention, get_nouns
 from cat.dataset import semeval_loader, citysearch_loader
 from collections import defaultdict, Counter
 from reach import Reach
-gamma = [0.01, 0.03, 0.07, 0.1, 0.15, 0.04, 0.3]
-best = 0
-N_NOUNS = 200
 
-scores = defaultdict(dict)
-r = Reach.load("embeddings/restaurant_vecs_w2v.vec",
+### SETTINGS
+
+w2v_path = "embeddings/w2v_restaurant_300_ep_9.vec"
+nouns_path = "data/nouns_restaurant_300_ep_9.json"
+
+## Change between `rbf_attention` and `attention`
+att = rbf_attention
+
+## Change between `citysearch_loader()` and `semeval_loader()`
+dataset = citysearch_loader()
+
+if att == rbf_attention: 
+    GAMMA = 0.04
+    N_NOUNS = 600
+else: 
+    GAMMA = -1      # not in use if using normal attention head
+    N_NOUNS = 950
+
+
+print("\tLoading words embedding ...")
+w2v = Reach.load(w2v_path,
                 unk_word="<UNK>")
+print("\tLoading top most frequent nouns ... ")
+top_nouns = get_nouns(w2v, nouns_path, n_nouns=N_NOUNS)
 
-d = json.load(open("data/nouns_restaurant.json"))
+for sentence, y, label_set in semeval_loader():
 
-
-nouns = Counter()
-## For each key, value pair in dictionary of restaurant nouns, if k is known -> add to nouns
-# Remove unknown nouns from nous_restaurant.json.
-for k, v in d.items():
-    if k.lower() in r.items:
-        nouns[k.lower()] += v
-
-embedding_paths = ["embeddings/restaurant_vecs_w2v.vec"]
-
-    # bundles = ((rbf_attention, attention), embedding_paths)
-
-    # for att, path in product(*bundles):
-        # r = Reach.load(path, unk_word="<UNK>")
-
-        # Get top candidates - top nouns 
-        # if att == rbf_attention:
-candidates, _ = zip(*nouns.most_common(N_NOUNS))
-        # else:
-        #     candidates, _ = zip(*nouns.most_common(BEST_ATT["n_noun"]))
-
-        # let each candidate is an aspect
-aspects = [[x] for x in candidates]
-
-
-
-for idx, (instances, y, label_set) in enumerate(semeval_loader()):
-    for gamma_ in gamma:
-        s = get_scores(instances,
-                        aspects,
-                        r,
-                        label_set,
-                        gamma=gamma_,
-                        remove_oov=False,
-                        attention_func=rbf_attention)
+        s = get_scores(instances=sentence, 
+                       nouns=top_nouns,
+                       r=w2v,
+                       labels=label_set,
+                       gamma=GAMMA, 
+                       attention_func=att,
+                       )
         y_pred = s.argmax(1)
+        f1 = precision_recall_fscore_support(y, y_pred, average=None)
+
+        f1_macro = precision_recall_fscore_support(y, y_pred, average='macro')
+        f1_weighted = precision_recall_fscore_support(y,
+                                                    y_pred,
+                                                    average="weighted")
+        f1_micro = precision_recall_fscore_support(y,
+                                                    y_pred,
+                                                    average="micro")
+        print('f1:')
+        pprint(f1)
+        print('f1_macro')
+        pprint(f1_macro)
+
+        print('f1_weighted')
+        pprint(f1_weighted)
+
+        print('f1_micro\n', f1_micro)
+
+        print('-----' * 5)
+        print('-----' * 5)
         f1 = f1_score(y, y_pred, average='weighted',)
-        print(gamma_, f1)
-        if f1 > best:
-            best = f1
-            print(gamma_)
-            # print('score head shape:', s.shape)
 
-            # print(y_pred[:10])
-            # print(y[:10], '\n')
-
-            f1 = precision_recall_fscore_support(y, y_pred, average=None)
-
-            f1_macro = precision_recall_fscore_support(y, y_pred, average='macro')
-            f1_weighted = precision_recall_fscore_support(y,
-                                                       y_pred,
-                                                       average="weighted")
-            f1_micro = precision_recall_fscore_support(y,
-                                                       y_pred,
-                                                       average="micro")
-            print('f1:')
-            pprint(f1)
-            print('f1_macro')
-            pprint(f1_macro)
-
-            print('f1_weighted')
-            pprint(f1_weighted)
-
-            print('f1_micro\n', f1_micro)
-
-            print('-----' * 5)
-            print('-----' * 5)
-            f1 = f1_score(y, y_pred, average='weighted',)
-
-            print(f1)
+        print(f1)

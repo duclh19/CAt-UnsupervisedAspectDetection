@@ -1,26 +1,7 @@
-"""Simple method.
-    - Functions: 
-        - get_aspects   : 
-
-        - candidate     : 
-
-        - rbf_attention :   implementation of attention with rbf-kernel 
-                            - input X = (number of words, D), Y = (number of aspects, D)
-                            - output rbf matrix (number of words, number of aspects)
-
-        - softmax       : implementation of softmax function - only use for normal attention
-        - attention:    : normal attention head
-
-        - mean          : for step 3 maybe. 
-
-        - get_scores    : 
-
-"""
 from pprint import pprint
 import numpy as np
-from collections import defaultdict
-# from utils import normalize # for normalize vector x
-from sklearn.metrics.pairwise import rbf_kernel # compute rbf (x, y, gamma)
+import json
+from sklearn.metrics.pairwise import rbf_kernel
 from collections import Counter
 
 def normalize(x):
@@ -44,64 +25,9 @@ def normalize(x):
     mask = norm > 0
     x[mask] /= norm[mask][:, None]
     return x
-def get_aspects(fragments, embeddings, n_adj_seed, n_nouns, min_count):
-    """Get aspects based on fragments."""
-    adj, _, noun = zip(*fragments)
-    adj_cand, _ = zip(*Counter(adj).most_common(n_adj_seed))
 
-    cands = candidate(embeddings,
-                      adj,
-                      noun,
-                      adj_cand,
-                      n_nouns,
-                      min_count)
-
-    return cands
-
-
-def candidate(embeddings,
-              adj,
-              noun,
-              seed_words,
-              n_nouns,
-              min_count):
-    """
-    Generates candidate aspects based on adjective co-occurrences
-
-    Parameters
-    ----------
-    embeddings : Reach
-        A Reach instance containing the word embeddings.
-    constructions : list of tuples
-        A list of adjective noun tuples.
-    seed_words : list of str
-        A list of strings. All these words should be in vocab for the
-        given embeddings model.
-    frequency_threshold : int
-        Any noun occurring fewer times than this threshold is discarded
-    n_nouns : int
-        The amount of items to return
-
-    Returns
-    -------
-    candidates : dict - not a dict - a tuple actually
-        A dictionary mapping strings to their scores.
-
-    """
-    a = list(set(adj))
-    sims = embeddings.similarity(a, seed_words).max(1)
-    adj_scores = dict(zip(a, sims))
-
-    noun_scores = defaultdict(lambda: [0, 0])
-    for adj, noun in zip(adj, noun):
-        noun_scores[noun][0] += adj_scores[adj]
-        noun_scores[noun][1] += 1
-
-    noun_scores = {k: v[0] for k, v in noun_scores.items()
-                   if v[1] > min_count}
-
-    return sorted(noun_scores.items(), key=lambda x: x[1])[-n_nouns:]
-
+def get_aspect(label_set:list, pred:list): 
+    return [label_set[x] for x in pred]
 
 def rbf_attention(vec, memory, gamma, **kwargs):
     """
@@ -131,13 +57,11 @@ def rbf_attention(vec, memory, gamma, **kwargs):
         return np.ones((1, len(vec))) / len(vec)
     return (z.sum(1) / s)[None, :]
 
-
 def softmax(x, axis=1):
     """Compute softmax values for each sets of scores in x."""
     e_x = np.exp(x - np.max(x, axis, keepdims=True))
     s = e_x.sum(axis=axis, keepdims=True)
     return e_x / s
-
 
 def attention(vec, memory, **kwargs):
     """
@@ -159,14 +83,23 @@ def attention(vec, memory, **kwargs):
     z = memory.dot(vec.T)
     return softmax(z)
 
+# def mean(vec, aspect_vecs, **kwargs):
+#     """Just a mean weighting."""
+#     return (np.ones(len(vec)) / len(vec))[None, :]
+def get_nouns(w2v, noun_path, n_nouns=300): 
+    all_nouns = json.load(open(noun_path))
 
-def mean(vec, aspect_vecs, **kwargs):
-    """Just a mean weighting."""
-    return (np.ones(len(vec)) / len(vec))[None, :]
+    nouns = Counter()
+    for k, v in all_nouns.items():
+        if k.lower() in w2v.items:
+            nouns[k.lower()] += v
 
+    top_nouns, _ = zip(*nouns.most_common(n_nouns))
+    top_nouns = [[x] for x in top_nouns]
+    return top_nouns
 
 def get_scores(instances,
-               aspects,
+               nouns,
                r,
                labels,
                remove_oov=False,
@@ -175,52 +108,36 @@ def get_scores(instances,
     """Scoring function.
     Parameters: 
     ------ 
-
-    instances: 
-    aspects: 
-    r: `Reach`
-    labels: list
-    remove_oov
+    instances   : list of sentences [['food', 'sweet',], [...]]
+    nouns       : list of nouns 
+    r           : class <Reach> 
+    labels      : list
     """
+
     assert all([x in r.items for x in labels])
 
     label_vecs = normalize(r.vectorize(labels))
     
     aspect_vecs = [x.mean(0)
-                   for x in r.transform(aspects,
+                   for x in r.transform(nouns,
                                         remove_oov=False)]
     aspect_vecs = np.stack(aspect_vecs)
-    # if len(instances) == 1:
-        # instances = [instances]
 
     t = r.transform(instances, remove_oov=remove_oov)
-
     out = []
     
     ### From attention head to score prediction
     for vec in t:
         att = attention_func(vec, aspect_vecs, **kwargs)
         # Att = (n_heads, n_words)
+        
         z = att.dot(vec)
         # z = (n_heads, n_dim)
+        
         x = normalize(z).dot(label_vecs.T)
         # x = (n_heads, n_labels)
         out.append(x.sum(0))
     return np.stack(out)
 
 if __name__ == "__main__": 
-    ## TODO: test get_scores() funtion 
-    ## TODO: test candidate()
-    ## TODO: test get_aspects()
-    x = [[1,2], [2, 3], [3, 4]]
-    y = [[2, 3], [1, 4]]
-    x = np.asarray(x)
-    y = np.asarray(y)
-
-    pprint(x)
-    pprint(y)
-
-    out = rbf_kernel(x, y, 0.3)
-    print(x.shape, y.shape, out.shape)
-    pprint(out)
-    # pprint(x - y)
+    pass

@@ -1,64 +1,41 @@
 import json
 # from typing import Counter
 
-from cat.simple import get_scores, rbf_attention, attention, normalize
+from cat.simple import get_nouns, get_scores, rbf_attention, attention, get_aspect
 from reach import Reach
 from collections import defaultdict, Counter
 
 
 
-GAMMA = .03
-N_ASPECT_WORDS = 200
-
+GAMMA       = .03
+N_NOUNS     = 200
+w2v_path    = "embeddings/restaurant_vecs_w2v.vec"
+nouns_path  = "data/nouns_restaurant.json"
 
 if __name__ == "__main__":
-
-    """
-        scores      : 
-        r           : 
-        aspects     : top N_ASPECT_WORDS
-        instances   : list of senctences, each sentence is a list of words
-        lable_set   : 
-    """
-
-
-    # scores = defaultdict(dict)
-    # r = Reach.load("embeddings/restaurant_vecs_w2v.vec",
-    #                unk_word="<UNK>")                        ## load word embedding 
+    print("\tLoading words embedding ...")
+    w2v = Reach.load(w2v_path, unk_word="<UNK>")     
     
+    print("\tLoading top most frequent nouns ... ")
+    top_nouns = get_nouns(w2v, nouns_path, N_NOUNS)
 
-    # nouns_restaurant = [[x] for x in json.load(open("data/nouns_restaurant.json"))]
-    # nouns = Counter()
-    # for k, v in nouns_restaurant.items():
-    #     if k.lower() in r.items:
-    #         nouns[k.lower()] += v
+    ### TESTING 
 
-    # top_nouns, _ = zip(*nouns.most_common(N_ASPECT_WORDS))
-    # top_nouns = [[x] for x in top_nouns]
-    
-    # instances = ["text_1".split(), "text_2".split()]
-    # label_set = ['food', 'staff', 'ambience']
+    # sentences = ["The seafood is so fresh, but the hotdog is much more better".split(), 
+    #              "the waiter is friendly but he is too short".split(), 
+    #              ]
+    sentences = ["The restaurant is modern".split()]
+    label_set = ['food', 'staff', 'ambience']
 
-    # s = get_scores(instances,
-    #                top_nouns,
-    #                r,
-    #                label_set,
-    #                gamma=GAMMA,
-    #                remove_oov=False,
-    #                attention_func=rbf_attention)
+    s = get_scores(sentences,
+                   top_nouns,
+                   w2v,
+                   label_set,
+                   gamma=GAMMA,
+                   attention_func=rbf_attention)
 
-    # pred = s.argmax(1)
+    pred = s.argmax(1)
 
-    import pandas as pd
+    label_pred = get_aspect(label_set, pred)
+    print(label_pred)
 
-    df = []
-
-    df = [
-        ['yen', 12, '10'], 
-        ['duc', 12, '9']
-    ]
-    df.append(['quan', 13, '11'])
-    df = pd.DataFrame(df, columns=['name', 'age', 'score'])
-
-    print(df)
-    
