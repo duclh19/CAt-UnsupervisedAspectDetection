@@ -24,7 +24,7 @@ Implementation of CAt approach for Unsupervised Aspect Category Detection. The o
     `python main.py`
 
 
-  - 2.2 Test your own experiment in restaurant domain.
+  - 2.2 Test your own experiment in restaurant domain (change your text in the file before running).
   
     `python inference.py`
 
