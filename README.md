@@ -9,7 +9,7 @@ Implementation of CAt approach for Unsupervised Aspect Category Detection. The o
 
   - 1.1 Download the dataset: 
     
-    The dataset can be downloaded by [SemEval-2014]() and [CitySearch](). 
+    The dataset can be downloaded by [SemEval-2014](https://drive.google.com/drive/folders/14Gl9ZKI4hptVEJc6qYrR8N0AomfhF71k?usp=sharing) and [CitySearch](https://drive.google.com/drive/folders/122W9h6bkZ1xPdabgp456vP3rnIyOuFpW?usp=sharing). 
     
     Put the SemEval-2014 dataset in `data/semeval2014/` folder, and CitySearch dataset in `data/citysearch/` folder.
 
