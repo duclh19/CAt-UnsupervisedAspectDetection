@@ -6,9 +6,9 @@ from reach import Reach
 from collections import defaultdict, Counter
 
 
-
-GAMMA       = .03
-N_NOUNS     = 200
+att         = rbf_attention # `rbf_attention` or `attention`
+GAMMA       = .03           # if attention then GAMMA is not in use
+N_NOUNS     = 200           # 200 for rbf_attention, 950 for attention
 w2v_path = "embeddings/w2v_restaurant_200_ep_5.vec"
 nouns_path = "data/nouns_restaurant_200_ep_5.json"
 
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # sentences = ["The seafood is so fresh, but the hotdog is much more better".split(), 
     #              "the waiter is friendly but he is too short".split(), 
     #              ]
-    sentences = ["The restaurant is large and modern".split()]
+    sentences = ["The design and atmosphere is just as good.".split()]
     label_set = ['food', 'staff', 'ambience']
 
     s = get_scores(sentences,
@@ -32,7 +32,7 @@ if __name__ == "__main__":
                    w2v,
                    label_set,
                    gamma=GAMMA,
-                   attention_func=rbf_attention)
+                   attention_func=att)
 
     pred = s.argmax(1)
 
