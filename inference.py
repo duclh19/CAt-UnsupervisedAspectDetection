@@ -1,10 +1,15 @@
 import json
 # from typing import Counter
 
-from cat.simple import get_nouns, get_scores, rbf_attention, attention, get_aspect
+from cat.simple import get_nouns, get_scores, rbf_attention, attention, get_aspect, softmax
 from reach import Reach
 from collections import defaultdict, Counter
+import numpy as np
 
+# def softmax(x):
+#     """Compute softmax values for each sets of scores in x."""
+#     e_x = np.exp(x - np.max(x))
+#     return e_x / e_x.sum(axis=0)
 
 att         = rbf_attention # `rbf_attention` or `attention`
 GAMMA       = .03           # if attention then GAMMA is not in use
@@ -21,10 +26,15 @@ if __name__ == "__main__":
 
     ### TESTING 
 
-    # sentences = ["The seafood is so fresh, but the hotdog is much more better".split(), 
-    #              "the waiter is friendly but he is too short".split(), 
-    #              ]
-    sentences = ["The design and atmosphere is just as good.".split()]
+    sentences = ["The seafood is so fresh, but the hotdog is much more better".split(), 
+                 "the waiter is friendly but he is too short".split(), 
+                 ]
+    # sentences = [
+    #     "The bread is top notch as well.".split(), 
+    # ]
+    # sentences = [
+        # "The design and atmosphere is just as good.".split()
+    # ]
     label_set = ['food', 'staff', 'ambience']
 
     s = get_scores(sentences,
@@ -33,9 +43,10 @@ if __name__ == "__main__":
                    label_set,
                    gamma=GAMMA,
                    attention_func=att)
-
-    pred = s.argmax(1)
-
+    logit = softmax(s)
+    pred = logit.argmax(1)
+    
     label_pred = get_aspect(label_set, pred)
-    print(label_pred)
+    print(label_pred, logit)
+    # print(label_pred)
 

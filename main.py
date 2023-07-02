@@ -4,7 +4,7 @@ from pprint import pprint
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import f1_score, precision_score, recall_score
 
-from cat.simple import get_scores, rbf_attention, attention, get_nouns
+from cat.simple import get_scores, rbf_attention, attention, get_nouns, softmax
 from cat.dataset import semeval_loader, citysearch_loader
 from collections import defaultdict, Counter
 from reach import Reach
@@ -43,7 +43,8 @@ for sentence, y, label_set in semeval_loader():
                        gamma=GAMMA, 
                        attention_func=att,
                        )
-        y_pred = s.argmax(1)
+        logit = softmax(s)
+        y_pred = logit.argmax(1)
         f1 = precision_recall_fscore_support(y, y_pred, average=None)
 
         f1_macro = precision_recall_fscore_support(y, y_pred, average='macro')

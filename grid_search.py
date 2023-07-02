@@ -14,7 +14,7 @@ from reach import Reach
 from sklearn.metrics import precision_recall_fscore_support
 
 from cat.dataset import citysearch_loader, semeval_loader
-from cat.simple import rbf_attention, attention, get_scores
+from cat.simple import rbf_attention, attention, get_scores, softmax
 
 ### SETTINGS
 w2v_path    = 'embeddings/w2v_restaurant_300_ep_9.vec'
@@ -78,8 +78,9 @@ for g, att_func in attentions:
                            label_set,
                            gamma=g,
                            attention_func=att_func)
+            logit = softmax(s)
 
-            y_pred = s.argmax(1)
+            y_pred = logit.argmax(1)
             f1_macro = precision_recall_fscore_support(y,
                                                        y_pred,
                                                        average="weighted")[:-1]
